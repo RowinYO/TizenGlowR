@@ -50,6 +50,7 @@ namespace TizenGlow.Wled
         private int _brightness = 100;
         private int _blackThreshold;
         private bool _smoothing = true;
+        private int _smoothingFixedMs;    // 0: the time constant follows Capture; otherwise this many ms
         private int _saturation = 100;
         private bool _offWithTv = true;   // "wledTvOff": switch the strip off when the TV turns off
         private bool _switchedOff;        // did so; the next frame sent switches it back on
@@ -77,7 +78,7 @@ namespace TizenGlow.Wled
         private string _wledInfo;
         private int _infoGeneration;
 
-        /// <param name="smoothingMs">Smoothing time constant while smoothing is on (follows the Capture Quality mode).</param>
+        /// <param name="smoothingMs">Smoothing time constant while smoothing is "on" (follows the Capture Quality mode); a fixed time chosen in the settings takes its place.</param>
         public WledOutput(Func<int> smoothingMs, Func<double> clock = null)
         {
             _smoothingMs = smoothingMs;
@@ -354,10 +355,17 @@ namespace TizenGlow.Wled
         public bool TrySetBrightness(string value) { return TrySetPercent(value, 100, ref _brightness); }
         public bool TrySetBlackThreshold(string value) { return TrySetPercent(value, 10, ref _blackThreshold); }
 
+        /// <summary>Smoothing time constants offered besides "on" (follows Capture) and "off", in ms.</summary>
+        public static readonly int[] SmoothingChoicesMs = { 250, 500, 1000, 2000 };
+
+        /// <summary>"on" (time constant follows Capture), "off", or a time constant in ms from SmoothingChoicesMs.</summary>
         public bool TrySetSmoothing(string value)
         {
-            if (value != "on" && value != "off") return false;
-            lock (_lock) { _smoothing = value == "on"; _hasSmoothed = false; _dirty = true; }
+            int fixedMs = 0;
+            if (value != "on" && value != "off"
+                && (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out fixedMs) || Array.IndexOf(SmoothingChoicesMs, fixedMs) < 0))
+                return false;
+            lock (_lock) { _smoothing = value != "off"; _smoothingFixedMs = fixedMs; _hasSmoothed = false; _dirty = true; }
             return true;
         }
 
@@ -415,7 +423,7 @@ namespace TizenGlow.Wled
         {
             LedLayout layout = _layout;
             double dt = now - _lastRenderMs;
-            int tau = _smoothing ? _smoothingMs() : 0;
+            int tau = !_smoothing ? 0 : _smoothingFixedMs > 0 ? _smoothingFixedMs : _smoothingMs();
             float alpha = !_hasSmoothed || tau <= 0 || dt >= 1000 ? 1f : (float)(1 - Math.Exp(-dt / tau));
             bool moved = false;
             float remaining = 0;

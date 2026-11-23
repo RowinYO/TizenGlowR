@@ -124,7 +124,7 @@ The layout is one loop clockwise from the top-left corner: top left to right, ri
 |---|---|
 | Brightness 0-100% | Scales every LED before sending. WLED's own brightness setting is never changed |
 | Black threshold 0-10% | An LED whose red, green and blue are all below this share of full scale is sent as off. Judged before brightness |
-| Smoothing On / Off | Time-based exponential smoothing; the time constant follows Capture: Fast 60 ms, Balanced 100 ms, Detailed 150 ms. While it is on, the strip is re-sent at 30 fps between captured frames, so colours glide towards each new frame instead of stepping once per capture (Send FPS shows the DDP rate). Off sends each frame as captured |
+| Smoothing Auto / 0.25-2 s / Off | Time-based exponential smoothing. Auto follows Capture: Fast 60 ms, Balanced 100 ms, Detailed 150 ms; 0.25, 0.5, 1 or 2 s set the time constant directly, for slower, softer colour changes (any Capture mode). While it is on, the strip is re-sent at 30 fps between captured frames, so colours glide towards each new frame instead of stepping once per capture (Send FPS shows the DDP rate). Off sends each frame as captured |
 | Saturation 0-200% | 100 as captured, 0 greyscale, 200 doubled (around each LED's brightness) |
 | Gamma 0.6-2.4 | Applied per LED after saturation: above 1 deepens dark colours and makes the strip less washed out, below 1 lifts them. 1.0 is as captured |
 

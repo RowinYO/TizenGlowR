@@ -1,8 +1,8 @@
 // This page's version. Must equal tizen-manifest.xml, package.json and config.xml; the release workflow checks.
-const uiVersion = '1.5.1';
+const uiVersion = '1.5.2';
 // Oldest service (TPK) this page works with. Raise it only when the page needs something new from the
 // service; a page-only release leaves it, and that release's TPK is then optional.
-const minService = '1.4.0'; // WLED only
+const minService = '1.5.2'; // smoothing times
 
 let client;
 let deviceIP;
@@ -190,7 +190,9 @@ function makeSelector(id, values, initial, render, key, after) {
 // WLED picture settings, sent as soon as they change.
 const brightnessSel = makeSelector('wledBrightness', [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 100, v => `Brightness: &lt; ${v}% &gt;`, 'wledBrightness');
 const thresholdSel = makeSelector('wledBlackThreshold', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, v => `Black threshold: &lt; ${v}% &gt;`, 'wledBlackThreshold');
-const smoothingSel = makeSelector('wledSmoothing', ['on', 'off'], 'on', v => `Smoothing: &lt; ${v === 'on' ? 'On' : 'Off'} &gt;`, 'wledSmoothing');
+// "on" follows Capture (Fast 60 ms, Balanced 100 ms, Detailed 150 ms); the others are fixed times the service accepts from 1.5.2.
+const smoothingLabels = { off: 'Off', on: 'Auto', 250: '0.25 s', 500: '0.5 s', 1000: '1 s', 2000: '2 s' };
+const smoothingSel = makeSelector('wledSmoothing', Object.keys(smoothingLabels), 'on', v => `Smoothing: &lt; ${smoothingLabels[v]} &gt;`, 'wledSmoothing');
 const tvOffLabels = { off: 'Switch the strip off', leave: "Leave it to WLED" };
 const tvOffSel = makeSelector('wledTvOff', Object.keys(tvOffLabels), 'off', v => `When the TV turns off: &lt; ${tvOffLabels[v]} &gt;`, 'wledTvOff');
 window.stepTvOff = tvOffSel.step;
